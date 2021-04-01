@@ -57,9 +57,9 @@ Resources:
           CURRENT_MONTH: !Ref CurrentMonth
           INC_SUPPORT: 'false'
       Events:
-        MonthlyEvent:
+        DailyEvent:
           Properties:
-            Schedule: !Sub cron(0 1 ${DayOfMonth} * ? *)
+            Schedule: cron(0 0 * * ? *)
           Type: Schedule
   
   CostExplorerReportLambdaIAMRole:

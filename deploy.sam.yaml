@@ -3,11 +3,11 @@ Transform: AWS::Serverless-2016-10-31
 Parameters:
   SESSendFrom:
     Type: String
-    Description: Email thats authorised in this account for SES sending. Will not email
+    Description: Email thats authorised in account for SES sending. Will not email
       if blank
   SESSendTo:
     Type: String
-    Description: List of comma seperated emails to send to
+    Description: List of comma emails to send to
   SESRegion:
     Type: String
     Default: us-east-1
@@ -40,7 +40,7 @@ Resources:
       Timeout: 60
       Handler: lambda.main_handler
       Runtime: python3.6
-      CodeUri: s3://aws-cost-explorer-report-bin/lambda.zip
+      CodeUri: s3://embark-cost-explorer-reports/aws-cost-explorer-report-builds/be884eab943aaba3fa8a4cbe33ed1125
       Layers:
       - arn:aws:lambda:us-east-1:749981256976:layer:aws-cost-explorer-report:1
       Role:
@@ -67,8 +67,7 @@ Resources:
       Events:
         DailyEvent:
           Properties:
-            Schedule:
-              Fn::Sub: cron(0 0 * * 1-5)
+            Schedule: cron(0 0 * * ? *)
           Type: Schedule
   CostExplorerReportLambdaIAMRole:
     Type: AWS::IAM::Role
