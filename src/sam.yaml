@@ -71,12 +71,7 @@ Resources:
         SecurityGroupIds:
           - !Ref SecurityGroups
         SubnetIds:
-          - subnet-678ac84c
-          - subnet-772c722e
-          - subnet-e9731f8c
-          - subnet-7732c54a
-          - subnet-9618979a
-          - subnet-f5beba82
+          - subnet-08c2ed2a50373e9fb
 
   CostExplorerReportLambdaIAMRole:
     Type: "AWS::IAM::Role"
