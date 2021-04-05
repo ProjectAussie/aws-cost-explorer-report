@@ -1,3 +1,18 @@
+## Embarkvet Specific Changes
+
+The base repository was forked and modified for Embarkvet daily cost reporting purposes. 
+See [this card](https://trello.com/c/i7EkTIS5/1970-automated-cost-explorer-alerts-emails)
+
+The following changes were made:
+
+* Parameterized granularity and default to "DAILY"
+* Added parameters to govern how many "trailing_days" to report on
+* Refactor for style and maintainability
+* Modularize the CE functionality and separate from driver
+* Added `rds_access.py` module to allow per-dog reporting
+* attempted to extend the CFN stack to include an RDS proxy for lambda to access (pending...)
+
+
 ## AWS Cost Explorer Report Generator
 
 Python SAM Lambda module for generating an Excel cost report with graphs, including month on month cost changes. Uses the AWS Cost Explorer API for data.
