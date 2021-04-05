@@ -48,9 +48,9 @@ Resources:
       Timeout: 60
       Handler: lambda.main_handler
       Runtime: python3.6
-      CodeUri: s3://embark-cost-explorer-reports/aws-cost-explorer-report-builds/0710181df80433a19033e23351149ba3
+      CodeUri: s3://embark-cost-explorer-reports/aws-cost-explorer-report-builds/f10f09f8be8defb5df9e0dab960e8532
       Layers:
-      - arn:aws:lambda:us-east-1:749981256976:layer:aws-cost-explorer-report:1
+      - arn:aws:lambda:us-east-1:074763112859:layer:aws-cost-explorer-report:1
       Role:
         Fn::GetAtt:
         - CostExplorerReportLambdaIAMRole
