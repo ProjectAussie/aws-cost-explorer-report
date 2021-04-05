@@ -28,9 +28,7 @@ def run_query(
     substitutions: Union[Sequence, Mapping] = None,
     read_only: bool = True,
 ) -> List:
-    """
-    For SQL statements with no return value, like INSERT
-    """
+
     real_connection = get_connection()
     if read_only:
         real_connection.set_session(readonly=True)

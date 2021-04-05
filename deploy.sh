@@ -25,12 +25,12 @@ zip -ur ../bin/lambda.zip *.py
 cd ..
 
 # update layer
-aws s3 cp bin/layer.zip s3://${BUCKET}/layers/layer.zip
-aws lambda publish-layer-version --layer-name aws-cost-explorer-report \
-    --description "Dependencies for cost explorer reporting" \
-    --license-info "MIT" \
-    --content S3Bucket=embark-cost-explorer-reports,S3Key=layers/layer.zip \
-    --compatible-runtimes python3.6 python3.7 python3.8
+#aws s3 cp bin/layer.zip s3://${BUCKET}/layers/layer.zip
+#aws lambda publish-layer-version --layer-name aws-cost-explorer-report \
+#    --description "Dependencies for cost explorer reporting" \
+#    --license-info "MIT" \
+#    --content S3Bucket=embark-cost-explorer-reports,S3Key=layers/layer.zip \
+#    --compatible-runtimes python3.6 python3.7 python3.8
 
 aws cloudformation package \
    --template-file src/sam.yaml \

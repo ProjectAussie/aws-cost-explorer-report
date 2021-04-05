@@ -4,6 +4,7 @@ from cost_explorer_report import CostExplorer
 
 
 def main_handler(event=None, context=None):
+    print("In main_handler")
     costexplorer = CostExplorer()
     # Default addReport has filter to remove Support / Credits / Refunds / UpfrontRI
     # Overall Billing Reports
@@ -22,7 +23,7 @@ def main_handler(event=None, context=None):
         Style="Total",
         IncSupport=True,
     )
-    costexplorer.add_per_dog_report()
+    #costexplorer.add_per_dog_report()
     costexplorer.add_report(
         Name="ServicesChange",
         GroupBy=[{"Type": "DIMENSION", "Key": "SERVICE"}],
