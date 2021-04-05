@@ -24,16 +24,10 @@ A script, for local or lambda use, to generate CostExplorer excel graphs
 
 from __future__ import print_function
 
-import os
-import sys
-import boto3
-import botocore
 import datetime
 import logging
-import pandas as pd
-
-# For date
-from dateutil.relativedelta import relativedelta
+import os
+import sys
 
 # For email
 from email.mime.application import MIMEApplication
@@ -41,6 +35,14 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import COMMASPACE, formatdate
 
+import boto3
+import pandas as pd
+
+# for rds access
+import rds_access
+
+# For date
+from dateutil.relativedelta import relativedelta
 
 # Required to load modules from vendored subfolder (for clean development env)
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "./vendored"))
@@ -57,7 +59,7 @@ else:
     CURRENT_MONTH = False
 
 LAST_MONTH_ONLY = os.getenv("LAST_MONTH_ONLY")
-TRAILING_DAYS = os.getenv("TRAILING_DAYS", "5")
+TRAILING_DAYS = os.getenv("TRAILING_DAYS", "7")
 
 # Default exclude support, as for Enterprise Support
 # as support billing is finalised later in month so skews trends
@@ -90,7 +92,7 @@ class CostExplorer:
 
         if TRAILING_DAYS:
             # generally only want like 7 days worth of dat
-            self.start = datetime.date.today() - relativedelta(days=+7)
+            self.start = datetime.date.today() - relativedelta(days=+int(TRAILING_DAYS))
         elif LAST_MONTH_ONLY:
             self.start = (datetime.date.today() - relativedelta(months=+1)).replace(
                 day=1
@@ -431,12 +433,34 @@ class CostExplorer:
                             logging.exception("Error")
                             df.at[index, i] = 0
                 lastindex = index
+
+        # before transposing, rows are dates and columns are services
         df = df.T
         df = df.sort_values(sort, ascending=False)
         df["total"] = df.sum(axis=1)
         df = df.sort_values("total", ascending=False)  # sort by total spend on services
-        df = df.iloc[:10, :]  #only keep top 10?
+        df = df.iloc[:10, :]  # only keep top 10?
         self.reports.append({"Name": Name, "Data": df, "Type": type})
+
+    def add_per_dog_report(self):
+        reports = [_report for _report in self.reports if _report["Name"] == "Services"]
+        if reports and len(reports) == 1:
+            report = reports[0]
+        else:
+            raise ValueError("Please run the Services report first")
+
+        df = report["Data"]
+        n_dogs_by_date = rds_access.get_dogs_per_day()
+        df = n_dogs_by_date.join(df.T, how="inner")
+
+        def cost_per_dog(col):
+            if col.name != "n_dogs":
+                return col / df["n_dogs"]
+            else:
+                return col
+
+        df = df.apply(cost_per_dog, axis=0).T
+        self.reports.append({"Name": "ServicesPerDog", "Data": df, "Type": "chart"})
 
     def generate_excel(self):
         # Create a Pandas Excel writer using XlsxWriter as the engine.\
@@ -451,11 +475,17 @@ class CostExplorer:
 
                 # Create a chart object.
                 chart = workbook.add_chart({"type": "column", "subtype": "stacked"})
+                df = report["Data"]
 
-                chartend = 12
+                if "PerDog" in report["Name"]:
+                    row_start = 2
+                else:
+                    row_start = 1
+
+                chartend = df.shape[1]
                 if CURRENT_MONTH:
-                    chartend = 13
-                for row_num in range(1, len(report["Data"]) + 1):
+                    chartend = df.shape[1]
+                for row_num in range(row_start, len(df) + 1):
                     chart.add_series(
                         {
                             "name": [report["Name"], row_num, 0],
@@ -470,20 +500,25 @@ class CostExplorer:
 
     def send_s3(self):
         # Time to deliver the file to S3
-        if os.environ.get("S3_BUCKET"):
+        s3_bucket = os.environ.get("S3_BUCKET")
+        if s3_bucket:
+            print(f"Sending to s3 {s3_bucket}...")
             s3 = boto3.client("s3")
             s3.upload_file(
                 self.report_name,
-                os.environ.get("S3_BUCKET"),
+                s3_bucket,
                 self.report_name,
             )
 
     def send_email(self):
-        if os.environ.get("SES_SEND"):
+        ses_send = os.environ.get("SES_SEND")
+        ses_from = os.environ.get("SES_FROM")
+        if ses_send and ses_from:
             # Email logic
+            print(f"Sending email from {ses_from} to {ses_send}")
             msg = MIMEMultipart()
-            msg["From"] = os.environ.get("SES_FROM")
-            msg["To"] = COMMASPACE.join(os.environ.get("SES_SEND").split(","))
+            msg["From"] = ses_from
+            msg["To"] = COMMASPACE.join(ses_send.split(","))
             msg["Date"] = formatdate(localtime=True)
             msg["Subject"] = "Cost Explorer Report"
             text = "Find your Cost Explorer report attached\n\n"
@@ -496,6 +531,6 @@ class CostExplorer:
             ses = boto3.client("ses", region_name=SES_REGION)
             result = ses.send_raw_email(
                 Source=msg["From"],
-                Destinations=os.environ.get("SES_SEND").split(","),
+                Destinations=ses_send.split(","),
                 RawMessage={"Data": msg.as_string()},
             )

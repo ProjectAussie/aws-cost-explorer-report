@@ -15,10 +15,12 @@ export COST_TAGS=""
 export CURRENT_MONTH=true
 #Day of Month, leave as 6 unless you want to capture refunds and final support values, then change to 12
 export DAY_MONTH=6
+#Number of trailing days to report on
+export TRAILING_DAYS=7
 
 mkdir -p bin
 cd src
-zip -ur ../bin/lambda.zip lambda.py
+zip -ur ../bin/lambda.zip *.py
 cd ..
 aws cloudformation package \
    --template-file src/sam.yaml \

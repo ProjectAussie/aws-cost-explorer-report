@@ -30,6 +30,25 @@ Parameters:
     Default: 6
     Description: DayOfMonth for Schedule, default 6 - use 12 if you want to report
       refunds and finalised Enterprise Support.
+  TrailingDays:
+    Type: Number
+    Default: 7
+    Description: Number of trailing days to report on
+  ProxyName:
+    Type: String
+    Default: exampleProxy
+  InstanceName:
+    Type: String
+    Default: env-prod-biodashboard-db
+  BootstrapSecretReaderRoleArn:
+    Type: String
+    Default: arn:aws:iam::074763112859:role/RDSProxyRole
+  BootstrapProxySecretArn:
+    Type: String
+    Default: arn:aws:secretsmanager:us-east-1:074763112859:secret:prod-db-main-0sQkpW
+  SubnetIds:
+    Type: String
+    Default: subnet-7732c54a,subnet-678ac84c,subnet-772c722e,subnet-f5beba82
 Resources:
   CostExplorerReport:
     Type: AWS::Serverless::Function
@@ -40,7 +59,7 @@ Resources:
       Timeout: 60
       Handler: lambda.main_handler
       Runtime: python3.6
-      CodeUri: s3://embark-cost-explorer-reports/aws-cost-explorer-report-builds/be884eab943aaba3fa8a4cbe33ed1125
+      CodeUri: s3://embark-cost-explorer-reports/aws-cost-explorer-report-builds/b7313cb1394f624e14e2b64851560232
       Layers:
       - arn:aws:lambda:us-east-1:749981256976:layer:aws-cost-explorer-report:1
       Role:
@@ -64,6 +83,8 @@ Resources:
           CURRENT_MONTH:
             Ref: CurrentMonth
           INC_SUPPORT: 'false'
+          TRAILING_DAYS:
+            Ref: TrailingDays
       Events:
         DailyEvent:
           Properties:
@@ -75,6 +96,7 @@ Resources:
       Path: /
       ManagedPolicyArns:
       - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
       Policies:
       - PolicyName: root
         PolicyDocument:
@@ -109,3 +131,35 @@ Resources:
           Principal:
             Service:
             - lambda.amazonaws.com
+  TestDBProxy:
+    Type: AWS::RDS::DBProxy
+    Properties:
+      DebugLogging: true
+      DBProxyName:
+        Ref: ProxyName
+      EngineFamily: POSTGRESQL
+      IdleClientTimeout: 120
+      RequireTLS: true
+      RoleArn:
+        Ref: BootstrapSecretReaderRoleArn
+      Auth:
+      - AuthScheme: SECRETS
+        SecretArn:
+          Ref: BootstrapProxySecretArn
+        IAMAuth: DISABLED
+      VpcSubnetIds:
+        Fn::Split:
+        - ','
+        - Ref: SubnetIds
+  ProxyTargetGroup:
+    Type: AWS::RDS::DBProxyTargetGroup
+    Properties:
+      DBProxyName:
+        Ref: TestDBProxy
+      DBInstanceIdentifiers:
+      - Ref: InstanceName
+      TargetGroupName: default
+      ConnectionPoolConfigurationInfo:
+        MaxConnectionsPercent: 10
+        MaxIdleConnectionsPercent: 5
+        ConnectionBorrowTimeout: 12
