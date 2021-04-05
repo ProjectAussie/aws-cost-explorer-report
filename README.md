@@ -75,37 +75,40 @@ This requires Docker, as it builds the package in an Amazon Linux container.
 `sh build.sh`
 
 ## Customise the report
-Edit the `main_handler` segment of src/lambda.py  
+Edit the `main_handler` segment of src/lambda.py
 
 ```python
-def main_handler(event=None, context=None): 
-    costexplorer = CostExplorer(CurrentMonth=False)
-    #Default addReport has filter to remove Support / Credits / Refunds / UpfrontRI
-    #Overall Billing Reports
-    costexplorer.addReport(Name="Total", GroupBy=[],Style='Total',IncSupport=True)
-    costexplorer.addReport(Name="TotalChange", GroupBy=[],Style='Change')
-    costexplorer.addReport(Name="TotalInclCredits", GroupBy=[],Style='Total',NoCredits=False,IncSupport=True)
-    costexplorer.addReport(Name="TotalInclCreditsChange", GroupBy=[],Style='Change',NoCredits=False)
-    costexplorer.addReport(Name="Credits", GroupBy=[],Style='Total',CreditsOnly=True)
-    costexplorer.addReport(Name="Refunds", GroupBy=[],Style='Total',RefundOnly=True)
-    costexplorer.addReport(Name="RIUpfront", GroupBy=[],Style='Total',UpfrontOnly=True)
-    #GroupBy Reports
-    costexplorer.addReport(Name="Services", GroupBy=[{"Type": "DIMENSION","Key": "SERVICE"}],Style='Total',IncSupport=True)
-    costexplorer.addReport(Name="ServicesChange", GroupBy=[{"Type": "DIMENSION","Key": "SERVICE"}],Style='Change')
-    costexplorer.addReport(Name="Accounts", GroupBy=[{"Type": "DIMENSION","Key": "LINKED_ACCOUNT"}],Style='Total')
-    costexplorer.addReport(Name="AccountsChange", GroupBy=[{"Type": "DIMENSION","Key": "LINKED_ACCOUNT"}],Style='Change')
-    costexplorer.addReport(Name="Regions", GroupBy=[{"Type": "DIMENSION","Key": "REGION"}],Style='Total')
-    costexplorer.addReport(Name="RegionsChange", GroupBy=[{"Type": "DIMENSION","Key": "REGION"}],Style='Change')
-    if os.environ.get('COST_TAGS'): #Support for multiple/different Cost Allocation tags
-        for tagkey in os.environ.get('COST_TAGS').split(','):
-            tabname = tagkey.replace(":",".") #Remove special chars from Excel tabname
-            costexplorer.addReport(Name="{}".format(tabname)[:31], GroupBy=[{"Type": "TAG","Key": tagkey}],Style='Total')
-            costexplorer.addReport(Name="Change-{}".format(tabname)[:31], GroupBy=[{"Type": "TAG","Key": tagkey}],Style='Change')
-    #RI Reports
-    costexplorer.addRiReport(Name="RICoverage")
-    costexplorer.addRiReport(Name="RIUtilization")
-    costexplorer.addRiReport(Name="RIUtilizationSavings", Savings=True)
-    costexplorer.addRiReport(Name="RIRecommendation")
-    costexplorer.generateExcel()
-    return "Report Generated"
+def main_handler(event=None, context=None):
+  costexplorer = CostExplorer(CurrentMonth=False)
+  # Default addReport has filter to remove Support / Credits / Refunds / UpfrontRI
+  # Overall Billing Reports
+  costexplorer.add_report(Name="Total", GroupBy=[], Style='Total', IncSupport=True)
+  costexplorer.add_report(Name="TotalChange", GroupBy=[], Style='Change')
+  costexplorer.add_report(Name="TotalInclCredits", GroupBy=[], Style='Total', NoCredits=False, IncSupport=True)
+  costexplorer.add_report(Name="TotalInclCreditsChange", GroupBy=[], Style='Change', NoCredits=False)
+  costexplorer.add_report(Name="Credits", GroupBy=[], Style='Total', CreditsOnly=True)
+  costexplorer.add_report(Name="Refunds", GroupBy=[], Style='Total', RefundOnly=True)
+  costexplorer.add_report(Name="RIUpfront", GroupBy=[], Style='Total', UpfrontOnly=True)
+  # GroupBy Reports
+  costexplorer.add_report(Name="Services", GroupBy=[{"Type": "DIMENSION", "Key": "SERVICE"}], Style='Total',
+                          IncSupport=True)
+  costexplorer.add_report(Name="ServicesChange", GroupBy=[{"Type": "DIMENSION", "Key": "SERVICE"}], Style='Change')
+  costexplorer.add_report(Name="Accounts", GroupBy=[{"Type": "DIMENSION", "Key": "LINKED_ACCOUNT"}], Style='Total')
+  costexplorer.add_report(Name="AccountsChange", GroupBy=[{"Type": "DIMENSION", "Key": "LINKED_ACCOUNT"}],
+                          Style='Change')
+  costexplorer.add_report(Name="Regions", GroupBy=[{"Type": "DIMENSION", "Key": "REGION"}], Style='Total')
+  costexplorer.add_report(Name="RegionsChange", GroupBy=[{"Type": "DIMENSION", "Key": "REGION"}], Style='Change')
+  if os.environ.get('COST_TAGS'):  # Support for multiple/different Cost Allocation tags
+    for tagkey in os.environ.get('COST_TAGS').split(','):
+      tabname = tagkey.replace(":", ".")  # Remove special chars from Excel tabname
+      costexplorer.add_report(Name="{}".format(tabname)[:31], GroupBy=[{"Type": "TAG", "Key": tagkey}], Style='Total')
+      costexplorer.add_report(Name="Change-{}".format(tabname)[:31], GroupBy=[{"Type": "TAG", "Key": tagkey}],
+                              Style='Change')
+  # RI Reports
+  costexplorer.add_ri_report(Name="RICoverage")
+  costexplorer.add_ri_report(Name="RIUtilization")
+  costexplorer.add_ri_report(Name="RIUtilizationSavings", Savings=True)
+  costexplorer.add_ri_report(Name="RIRecommendation")
+  costexplorer.generate_excel()
+  return "Report Generated"
 ```
