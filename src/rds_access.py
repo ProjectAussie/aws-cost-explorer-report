@@ -6,19 +6,21 @@ import pandas as pd
 import psycopg2
 from psycopg2.extensions import connection
 
-client = boto3.client("secretsmanager")
 
-secrets = client.get_secret_value(SecretId="prod-db-main")
+def get_config():
 
-secrets_dict = json.loads(secrets["SecretString"])
-
-username = secrets_dict["username"]
-password = secrets_dict["password"]
-host = secrets_dict["host"]
-dbname = secrets_dict["dbname"]
+    client = boto3.client("secretsmanager")
+    secrets = client.get_secret_value(SecretId="prod-db-main")
+    secrets_dict = json.loads(secrets["SecretString"])
+    return secrets_dict
 
 
 def get_connection() -> connection:
+    secrets_dict = get_config()
+    username = secrets_dict["username"]
+    password = secrets_dict["password"]
+    host = secrets_dict["host"]
+    dbname = secrets_dict["dbname"]
     conn = psycopg2.connect(dbname=dbname, user=username, password=password, host=host)
     return conn
 

@@ -23,7 +23,7 @@ def main_handler(event=None, context=None):
         Style="Total",
         IncSupport=True,
     )
-    #costexplorer.add_per_dog_report()
+    costexplorer.add_per_dog_report()
     costexplorer.add_report(
         Name="ServicesChange",
         GroupBy=[{"Type": "DIMENSION", "Key": "SERVICE"}],
