@@ -13,6 +13,19 @@ The following changes were made:
 * attempted to extend the CFN stack to include an RDS proxy for lambda to access (pending...)
 
 
+## Components of this serverless application
+
+* Dockerfile - defines the container and command in which the lambda layer, dependencies, and function will be packaged
+  * calls `src/build_package.sh`
+  * utilizes `src/requirements.txt`
+* build.sh - builds the lambda.zip and layer.zip and deposits them to `bin`
+* src/sam.yaml - CFN template defining the stack, lambda layer name is currently hardcoded
+* deploy.sh - variable overwrites for the `src/sam.yaml` CFN template, packages the template, publishes the lambda layer
+  and deploys the stack, updating the lambda function code. **Manually editing lambda function code in console prevents
+  the deployment from overwriting it
+* src/*.py - application code  
+
+
 ## AWS Cost Explorer Report Generator
 
 Python SAM Lambda module for generating an Excel cost report with graphs, including month on month cost changes. Uses the AWS Cost Explorer API for data.

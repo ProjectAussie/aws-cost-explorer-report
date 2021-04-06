@@ -65,8 +65,9 @@ ORDER BY pipeline_started_at asc
         records, columns=["delivery_id", "runtime", "target", "n_dogs"]
     )
     df["date"] = df["delivery_id"].str.split("_", expand=True)[1]
-    df = df.sort_values("date", ascending=False)
-    sliced_df = df.iloc[:10, 3:]
+    df = df.sort_values("date", ascending=True)
+    sliced_df = df.iloc[-10:, 3:]
+    sliced_df.dropna(inplace=True)
     dogs_per_day = sliced_df.set_index("date", drop=True)
     dogs_per_day.loc["total", "n_dogs"] = sum(dogs_per_day["n_dogs"])
     return dogs_per_day
