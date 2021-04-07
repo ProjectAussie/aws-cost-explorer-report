@@ -1,0 +1,21 @@
+*.DS_STORE # mac os x files
+*.DS_Store # alternate
+.DS_Store
+*.swp #  vi temp files
+*.o # not human readable
+*.a # not human readable
+*.pyc # not human readable
+*/.vagrant/*
+*motd.legal-displayed
+*.viminfo
+*.sublime-workspace
+*.sublime-project
+*sublime-project
+*.pyc
+temp/*
+.idea
+.run/** # Use .pycharm_run_configs instead to share run configs.
+.vscode/
+.emacs.desktop
+.mypy_cache
+.pytest_cache

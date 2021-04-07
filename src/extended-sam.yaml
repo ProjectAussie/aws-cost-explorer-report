@@ -32,10 +32,22 @@ Parameters:
     Type: Number
     Default: 7
     Description: "Number of trailing days to report on"
-  SecurityGroups:
+
+  ProxyName:
     Type: String
-    Default: sg-f241098f
-    Description: "Security group to enable RDS access"
+    Default: exampleProxy
+  InstanceName:
+    Type: String
+    Default: env-prod-biodashboard-db
+  BootstrapSecretReaderRoleArn:
+    Type: String
+    Default: arn:aws:iam::074763112859:role/RDSProxyRole
+  BootstrapProxySecretArn:
+    Type: String
+    Default: arn:aws:secretsmanager:us-east-1:074763112859:secret:prod-db-main-0sQkpW
+  SubnetIds:
+    Type: String
+    Default: subnet-7732c54a,subnet-678ac84c,subnet-772c722e,subnet-f5beba82
 
 Resources:
   CostExplorerReport:
@@ -49,8 +61,11 @@ Resources:
       Runtime: python3.6
       CodeUri: ../bin/lambda.zip
       Layers:
-        - arn:aws:lambda:us-east-1:074763112859:layer:aws-cost-explorer-report:1
+        - arn:aws:lambda:us-east-1:749981256976:layer:aws-cost-explorer-report:1
       Role: !GetAtt CostExplorerReportLambdaIAMRole.Arn
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref Table
       Environment:
         Variables:
           S3_BUCKET: !Ref S3Bucket
@@ -67,12 +82,7 @@ Resources:
           Properties:
             Schedule: cron(0 0 * * ? *)
           Type: Schedule
-      VpcConfig:
-        SecurityGroupIds:
-          - !Ref SecurityGroups
-        SubnetIds:
-          - subnet-08c2ed2a50373e9fb
-
+  
   CostExplorerReportLambdaIAMRole:
     Type: "AWS::IAM::Role"
     Properties:
@@ -120,3 +130,31 @@ Resources:
               Principal:
                 Service: 
                   - "lambda.amazonaws.com"
+  TestDBProxy:
+    Type: AWS::RDS::DBProxy
+    Properties:
+
+      DebugLogging: true
+      DBProxyName: !Ref ProxyName
+      EngineFamily: POSTGRESQL
+      IdleClientTimeout: 120
+      RequireTLS: true
+      RoleArn:
+        !Ref BootstrapSecretReaderRoleArn
+      Auth:
+        - { AuthScheme: SECRETS, SecretArn: !Ref BootstrapProxySecretArn, IAMAuth: DISABLED }
+      VpcSubnetIds:
+        Fn::Split: [ ",", !Ref SubnetIds ]
+
+  ProxyTargetGroup:
+    Type: AWS::RDS::DBProxyTargetGroup
+    Properties:
+      DBProxyName: !Ref TestDBProxy
+
+      DBInstanceIdentifiers: [ !Ref InstanceName ]
+      TargetGroupName: default
+      ConnectionPoolConfigurationInfo:
+        MaxConnectionsPercent: 10
+
+        MaxIdleConnectionsPercent: 5
+        ConnectionBorrowTimeout: 12

@@ -3,11 +3,11 @@ Transform: AWS::Serverless-2016-10-31
 Parameters:
   SESSendFrom:
     Type: String
-    Description: Email thats authorised in this account for SES sending. Will not email
+    Description: Email thats authorised in account for SES sending. Will not email
       if blank
   SESSendTo:
     Type: String
-    Description: List of comma seperated emails to send to
+    Description: List of comma emails to send to
   SESRegion:
     Type: String
     Default: us-east-1
@@ -30,6 +30,14 @@ Parameters:
     Default: 6
     Description: DayOfMonth for Schedule, default 6 - use 12 if you want to report
       refunds and finalised Enterprise Support.
+  TrailingDays:
+    Type: Number
+    Default: 7
+    Description: Number of trailing days to report on
+  SecurityGroups:
+    Type: String
+    Default: sg-f241098f
+    Description: Security group to enable RDS access
 Resources:
   CostExplorerReport:
     Type: AWS::Serverless::Function
@@ -40,9 +48,9 @@ Resources:
       Timeout: 60
       Handler: lambda.main_handler
       Runtime: python3.6
-      CodeUri: s3://aws-cost-explorer-report-bin/lambda.zip
+      CodeUri: s3://embark-cost-explorer-reports/aws-cost-explorer-report-builds/4cffff471c73c3cad49649db7780a35c
       Layers:
-      - arn:aws:lambda:us-east-1:749981256976:layer:aws-cost-explorer-report:1
+      - arn:aws:lambda:us-east-1:074763112859:layer:aws-cost-explorer-report:1
       Role:
         Fn::GetAtt:
         - CostExplorerReportLambdaIAMRole
@@ -64,20 +72,28 @@ Resources:
           CURRENT_MONTH:
             Ref: CurrentMonth
           INC_SUPPORT: 'false'
+          TRAILING_DAYS:
+            Ref: TrailingDays
       Events:
         DailyEvent:
           Properties:
-            Schedule:
-              Fn::Sub: cron(0 0 * * 1-5)
+            Schedule: cron(0 0 * * ? *)
           Type: Schedule
+      VpcConfig:
+        SecurityGroupIds:
+        - Ref: SecurityGroups
+        SubnetIds:
+        - subnet-08c2ed2a50373e9fb
   CostExplorerReportLambdaIAMRole:
     Type: AWS::IAM::Role
     Properties:
       Path: /
       ManagedPolicyArns:
       - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+      - arn:aws:iam::074763112859:policy/RDSProxyTest
       Policies:
-      - PolicyName: root
+      - PolicyName: aws-cost-explorer-misc
         PolicyDocument:
           Version: '2012-10-17'
           Statement:
