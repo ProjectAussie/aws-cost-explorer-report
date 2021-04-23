@@ -38,11 +38,11 @@ from email.utils import COMMASPACE, formatdate
 import boto3
 import pandas as pd
 
-# for rds access
-import rds_access
-
 # For date
 from dateutil.relativedelta import relativedelta
+
+# for rds access
+import rds_access
 
 # Required to load modules from vendored subfolder (for clean development env)
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "./vendored"))
@@ -450,7 +450,7 @@ class CostExplorer:
             raise ValueError("Please run the Services report first")
 
         df = report["Data"]
-        n_dogs_by_date = rds_access.get_dogs_per_day()
+        n_dogs_by_date = rds_access.get_dogs_per_day(n_days=int(TRAILING_DAYS))
         df = n_dogs_by_date.join(df.T, how="inner")
 
         def cost_per_dog(col):
