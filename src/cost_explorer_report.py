@@ -85,7 +85,7 @@ class CostExplorer:
         self.reports = []
         self.report_name = report_name
         self.client = boto3.client("ce", region_name="us-east-1")
-        self.end = datetime.date.today().replace(day=1)
+        self.end = datetime.date.today() - datetime.timedelta(days=1)
         self.riend = datetime.date.today()
         if CURRENT_DAY:
             self.end = self.riend
