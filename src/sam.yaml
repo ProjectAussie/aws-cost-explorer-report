@@ -65,7 +65,7 @@ Resources:
       Events:
         DailyEvent:
           Properties:
-            Schedule: cron(0 0 * * ? *)
+            Schedule: cron(0 8 * * ? *)
           Type: Schedule
       VpcConfig:
         SecurityGroupIds:

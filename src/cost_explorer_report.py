@@ -52,11 +52,11 @@ sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "./ven
 SES_REGION = os.getenv("SES_REGION", "us-east-1")
 ACCOUNT_LABEL = os.getenv("ACCOUNT_LABEL", "Email")
 
-CURRENT_MONTH = os.getenv("CURRENT_MONTH", "true")
-if CURRENT_MONTH == "true":
-    CURRENT_MONTH = True
+CURRENT_DAY = os.getenv("CURRENT_DAY", "false")
+if CURRENT_DAY == "true":
+    CURRENT_DAY = True
 else:
-    CURRENT_MONTH = False
+    CURRENT_DAY = False
 
 LAST_MONTH_ONLY = os.getenv("LAST_MONTH_ONLY")
 TRAILING_DAYS = os.getenv("TRAILING_DAYS", "7")
@@ -87,7 +87,7 @@ class CostExplorer:
         self.client = boto3.client("ce", region_name="us-east-1")
         self.end = datetime.date.today().replace(day=1)
         self.riend = datetime.date.today()
-        if CURRENT_MONTH:
+        if CURRENT_DAY:
             self.end = self.riend
 
         if TRAILING_DAYS:
@@ -483,7 +483,7 @@ class CostExplorer:
                     row_start = 1
 
                 chartend = df.shape[1]
-                if CURRENT_MONTH:
+                if CURRENT_DAY:
                     chartend = df.shape[1]
                 for row_num in range(row_start, len(df) + 1):
                     chart.add_series(
