@@ -43,5 +43,5 @@ aws cloudformation deploy \
   --capabilities CAPABILITY_IAM \
   --parameter-overrides SESSendFrom=$SES_FROM S3Bucket=$BUCKET \
   SESSendTo=$SES_TO SESRegion=$SES_REGION \
-  AccountLabel=Email ListOfCostTags=$COST_TAGS CurrentMonth=$CURRENT_MONTH \
+  AccountLabel=Email ListOfCostTags=$COST_TAGS CurrentDay=$CURRENT_DAY \
   DayOfMonth=$DAY_MONTH
