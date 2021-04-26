@@ -59,13 +59,13 @@ Resources:
           SES_REGION: !Ref SESRegion
           COST_TAGS: !Ref ListOfCostTags
           ACCOUNT_LABEL: !Ref AccountLabel
-          CURRENT_MONTH: !Ref CurrentMonth
+          CURRENT_DAY: !Ref CurrentDay
           INC_SUPPORT: 'false'
           TRAILING_DAYS: !Ref TrailingDays
       Events:
         DailyEvent:
           Properties:
-            Schedule: cron(0 0 * * ? *)
+            Schedule: cron(0 8 * * ? *)
           Type: Schedule
       VpcConfig:
         SecurityGroupIds:

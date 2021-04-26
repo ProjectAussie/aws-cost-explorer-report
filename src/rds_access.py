@@ -42,7 +42,7 @@ def run_query(
     return rows
 
 
-def get_dogs_per_day():
+def get_dogs_per_day(n_days: int = 14):
     query = """
     WITH dogs_per_tranche AS 
 (
@@ -56,17 +56,17 @@ SELECT
 FROM pipeline_status p
 LEFT JOIN dogs_per_tranche d
 ON p.tranche_date = d.latest_tranche_date
-WHERE NOW() - delivery_uploaded_to_s3_at < '10 days'
+WHERE NOW() - delivery_uploaded_to_s3_at < '%(n_days)s days'
 ORDER BY pipeline_started_at asc
     """
 
-    records = run_query(query)
+    records = run_query(query, substitutions={"n_days": n_days})
     df = pd.DataFrame.from_records(
         records, columns=["delivery_id", "runtime", "target", "n_dogs"]
     )
     df["date"] = df["delivery_id"].str.split("_", expand=True)[1]
     df = df.sort_values("date", ascending=True)
-    sliced_df = df.iloc[-10:, 3:]
+    sliced_df = df.iloc[-n_days:, 3:]
     sliced_df.dropna(inplace=True)
     dogs_per_day = sliced_df.set_index("date", drop=True)
     dogs_per_day.loc["total", "n_dogs"] = sum(dogs_per_day["n_dogs"])

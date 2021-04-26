@@ -6,13 +6,13 @@ export AWS_DEFAULT_REGION=us-east-1
 #Must be in same region as lambda (ie AWS_DEFAULT_REGION)
 export BUCKET=embark-cost-explorer-reports
 #Comma Seperated list of emails to send to
-export SES_TO=mzhong@embarkvet.com
-export SES_FROM=mzhong@embarkvet.com
+export SES_TO=infrastructureengineering@embarkvet.com
+export SES_FROM=infrastructureengineering@embarkvet.com
 export SES_REGION=us-east-1
 #Comma Seperated list of Cost Allocation Tags (must be configured in AWS billing prefs)
 export COST_TAGS=""
 #Do you want partial figures for the current month (set to true if running weekly/daily)
-export CURRENT_MONTH=true
+export CURRENT_DAY=false
 #Day of Month, leave as 6 unless you want to capture refunds and final support values, then change to 12
 export DAY_MONTH=6
 #Number of trailing days to report on
@@ -43,5 +43,5 @@ aws cloudformation deploy \
   --capabilities CAPABILITY_IAM \
   --parameter-overrides SESSendFrom=$SES_FROM S3Bucket=$BUCKET \
   SESSendTo=$SES_TO SESRegion=$SES_REGION \
-  AccountLabel=Email ListOfCostTags=$COST_TAGS CurrentMonth=$CURRENT_MONTH \
+  AccountLabel=Email ListOfCostTags=$COST_TAGS CurrentDay=$CURRENT_DAY \
   DayOfMonth=$DAY_MONTH
